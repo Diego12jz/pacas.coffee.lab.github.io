@@ -1,0 +1,54 @@
+/* ====== ESTILOS PERSONALIZADOS ====== */
+/* Tailwind ya maneja casi todo, pero acá podés agregar detalles propios */
+
+body {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  scroll-behavior: smooth;
+}
+
+/* Scroll suave para los enlaces del nav */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Espacio extra arriba de las secciones para que el nav fijo no las tape */
+section {
+  scroll-margin-top: 80px;
+}
+
+/* Transiciones suaves en las tarjetas de productos */
+.producto-card {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.producto-card:hover {
+  transform: translateY(-4px);
+}
+
+/* Estilo para el botón + y - del carrito */
+.btn-cantidad {
+  width: 28px;
+  height: 28px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.btn-cantidad:hover {
+  background: #c8a27a;
+  color: white;
+}
+
+/* Scrollbar personalizada para el carrito */
+#listaCarrito::-webkit-scrollbar {
+  width: 6px;
+}
+
+#listaCarrito::-webkit-scrollbar-thumb {
+  background: #c8a27a;
+  border-radius: 3px;
+}

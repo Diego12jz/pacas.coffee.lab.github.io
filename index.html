@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PACAS COFFEE LAB | Tienda Online</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            cafe: '#6f4e37',
+            cafeOscuro: '#4a2c2a',
+            crema: '#f7f3ef',
+            arena: '#c8a27a'
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    .carrusel {
+      display: flex;
+      gap: 1rem;
+      overflow-x: auto;
+      scroll-behavior: smooth;
+      padding: 1rem 0.5rem;
+      scrollbar-width: thin;
+      scrollbar-color: #c8a27a #f7f3ef;
+    }
+    .carrusel::-webkit-scrollbar { height: 8px; }
+    .carrusel::-webkit-scrollbar-track { background: #f7f3ef; border-radius: 4px; }
+    .carrusel::-webkit-scrollbar-thumb { background: #c8a27a; border-radius: 4px; }
+    .carrusel .card-producto {
+      min-width: 260px;
+      max-width: 260px;
+      flex-shrink: 0;
+      position: relative;
+    }
+    .btn-carrusel {
+      background: #6f4e37;
+      color: white;
+      border: none;
+      width: 42px;
+      height: 42px;
+      border-radius: 50%;
+      font-size: 20px;
+      cursor: pointer;
+      transition: background 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .btn-carrusel:hover { background: #4a2c2a; }
+
+    /* Estilo para la imagen clickeable (zoom) */
+    .img-zoom {
+      cursor: zoom-in;
+      transition: transform 0.3s;
+    }
+    .img-zoom:hover { transform: scale(1.05); }
+
+    /* Etiqueta SIN STOCK */
+    .badge-sinstock {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      background: #dc2626;
+      color: white;
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: bold;
+      z-index: 10;
+      letter-spacing: 0.5px;
+    }
+    .badge-pocostock {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      background: #f59e0b;
+      color: white;
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: bold;
+      z-index: 10;
+      letter-spacing: 0.5px;
+    }
+
+    /* Modal zoom */
+    #modalZoom {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.85);
+      z-index: 100;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+    }
+    #modalZoom.activo { display: flex; }
+    #modalZoom img {
+      max-width: 90%;
+      max-height: 90vh;
+      border-radius: 12px;
+      box-shadow: 0 0 40px rgba(0,0,0,0.7);
+    }
+    #modalZoom .cerrar-zoom {
+      position: absolute;
+      top: 20px;
+      right: 25px;
+      font-size: 40px;
+      color: white;
+      cursor: pointer;
+      font-weight: bold;
+      line-height: 1;
+    }
+    #modalZoom .cerrar-zoom:hover { color: #c8a27a; }
+  </style>
+</head>
+<body class="bg-crema text-gray-800">
+
+  <header class="relative bg-cafeOscuro text-white p-6 text-center overflow-hidden">
+    <img src="images/PACASCOFFELAB AZUL.webp" alt="PACAS COFFEE LAB"
+         class="absolute inset-0 w-full h-full object-cover opacity-40">
+
+    <div class="relative z-10">
+      <h1 class="text-3xl font-bold">PACAS COFFEE LAB</h1>
+      <p class="text-sm mt-1">Estilo y sabor en un solo lugar</p>
+
+      <button onclick="abrirCarrito()" class="mt-4 bg-arena text-cafeOscuro font-bold px-4 py-2 rounded-lg hover:bg-white transition">
+        🛒 Carrito (<span id="contadorCarrito">0</span>)
+      </button>
+    </div>
+  </header>
+
+  <!-- NAV -->
+  <nav class="bg-cafe flex justify-center gap-6 p-3 text-white font-semibold sticky top-0 z-40">
+    <a href="#remeras" class="hover:underline">Remeras</a>
+    <a href="#cafe" class="hover:underline">Café</a>
+    <a href="#accesorios" class="hover:underline">Accesorios</a>
+    <a href="#info" class="hover:underline">Información</a>
+    <a href="#contacto" class="hover:underline">Contacto</a>
+  </nav>
+
+  <div class="max-w-6xl mx-auto p-4">
+
+    <!-- REMERAS -->
+    <section id="remeras" class="my-10">
+      <div class="flex justify-between items-center border-b-2 border-arena pb-2 mb-3">
+        <h2 class="text-2xl font-bold text-cafeOscuro">👕 Remeras</h2>
+        <div class="flex gap-2">
+          <button class="btn-carrusel" onclick="moverCarrusel('carrusel-remeras', -1)">‹</button>
+          <button class="btn-carrusel" onclick="moverCarrusel('carrusel-remeras', 1)">›</button>
+        </div>
+      </div>
+      <div id="carrusel-remeras" class="carrusel"></div>
+    </section>
+
+    <!-- CAFÉ -->
+    <section id="cafe" class="my-10">
+      <div class="flex justify-between items-center border-b-2 border-arena pb-2 mb-3">
+        <h2 class="text-2xl font-bold text-cafeOscuro">☕ Café</h2>
+        <div class="flex gap-2">
+          <button class="btn-carrusel" onclick="moverCarrusel('carrusel-cafe', -1)">‹</button>
+          <button class="btn-carrusel" onclick="moverCarrusel('carrusel-cafe', 1)">›</button>
+        </div>
+      </div>
+      <div id="carrusel-cafe" class="carrusel"></div>
+    </section>
+
+    <!-- ACCESORIOS -->
+    <section id="accesorios" class="my-10">
+      <div class="flex justify-between items-center border-b-2 border-arena pb-2 mb-3">
+        <h2 class="text-2xl font-bold text-cafeOscuro">🎁 Accesorios</h2>
+        <div class="flex gap-2">
+          <button class="btn-carrusel" onclick="moverCarrusel('carrusel-accesorios', -1)">‹</button>
+          <button class="btn-carrusel" onclick="moverCarrusel('carrusel-accesorios', 1)">›</button>
+        </div>
+      </div>
+      <div id="carrusel-accesorios" class="carrusel"></div>
+    </section>
+
+    <!-- INFO -->
+    <section id="info" class="my-10">
+      <h2 class="text-2xl font-bold text-cafeOscuro border-b-2 border-arena pb-2 mb-5">ℹ️ Información</h2>
+      <div class="bg-white p-6 rounded-lg shadow space-y-2">
+        <p><strong>Horarios:</strong> Lunes a sábado de 9 a 20 hs.</p>
+        <p><strong>Envíos:</strong> A todo el país. Gratis en compras superiores a s/15.000.</p>
+        <p><strong>Pagos:</strong> Efectivo, transferencia, tarjetas de crédito y débito.</p>
+        <p><strong>Garantía:</strong> Cambios sin cargo dentro de los 30 días.</p>
+      </div>
+    </section>
+
+    <!-- CONTACTO + FORMULARIO -->
+    <section id="contacto" class="my-10">
+      <h2 class="text-2xl font-bold text-cafeOscuro border-b-2 border-arena pb-2 mb-5">📞 Contacto y Pedido</h2>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div class="bg-white p-6 rounded-lg shadow space-y-2">
+          <p><strong>WhatsApp:</strong> +54 937087522 </p>
+          <p><strong>Email:</strong> hola@pacascoffeelab.com</p>
+          <p><strong>Instagram:</strong> @pacas.lab</p>
+        
+        </div>
+
+        <form id="formPedido" class="bg-white p-6 rounded-lg shadow space-y-3">
+          <h3 class="font-bold text-cafeOscuro">Enviar pedido por WhatsApp</h3>
+          <input type="text" id="nombre" placeholder="Tu nombre" required class="w-full border border-gray-300 rounded p-2">
+          <input type="tel" id="telefono" placeholder="Tu teléfono" required class="w-full border border-gray-300 rounded p-2">
+          <textarea id="mensaje" placeholder="Mensaje o dirección de envío" rows="3" class="w-full border border-gray-300 rounded p-2"></textarea>
+          <button type="submit" class="bg-cafe text-white px-4 py-2 rounded hover:bg-cafeOscuro transition w-full">
+            Enviar pedido 🚀
+          </button>
+        </form>
+      </div>
+    </section>
+  </div>
+
+  <!-- FOOTER -->
+  <footer class="bg-cafeOscuro text-white text-center p-4 text-sm">
+    <p>© 2025 PACAS COFFEE LAB - Todos los derechos reservados</p>
+  </footer>
+
+  <!-- MODAL CARRITO -->
+  <div id="modalCarrito" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex justify-center items-start pt-10">
+    <div class="bg-white w-full max-w-md rounded-lg shadow-lg p-5 max-h-[80vh] overflow-y-auto">
+      <div class="flex justify-between items-center mb-4">
+        <h3 class="text-xl font-bold text-cafeOscuro">🛒 Tu carrito</h3>
+        <button onclick="cerrarCarrito()" class="text-2xl font-bold text-gray-500 hover:text-red-500">&times;</button>
+      </div>
+      <div id="listaCarrito" class="space-y-3"></div>
+      <div class="border-t mt-4 pt-4 flex justify-between font-bold text-lg">
+        <span>Total:</span>
+        <span id="totalCarrito">s/0</span>
+      </div>
+      <button onclick="enviarCarritoWhatsApp()" class="mt-4 w-full bg-green-600 text-white py-2 rounded hover:bg-green-700 transition">
+        Finalizar pedido por WhatsApp
+      </button>
+      <button onclick="vaciarCarrito()" class="mt-2 w-full bg-red-500 text-white py-2 rounded hover:bg-red-600 transition">
+        Vaciar carrito
+      </button>
+    </div>
+  </div>
+
+  <!-- MODAL ZOOM IMAGEN -->
+  <div id="modalZoom" onclick="cerrarZoom(event)">
+    <span class="cerrar-zoom" onclick="cerrarZoom(event)">&times;</span>
+    <img id="imgZoom" src="" alt="Vista ampliada">
+  </div>
+
+  <script>
+    // ====== PRODUCTOS ======
+    // ✏️ stock: cantidad disponible. Cuando llegue a 0, se muestra SIN STOCK.
+    const productos = [
+      // Remeras
+      { id: 1, nombre: "Remera Negra",     precio: 80, categoria: "remeras",    stock: 10, img: "https://user40534.na.imgto.link/public/20261004/1000287582.avif",     desc: "100% algodón, corte clásico" },
+      { id: 2, nombre: "Remera Blanca",    precio: 80*8, categoria: "remeras",    stock: 5,  img: "https://user40534.na.imgto.link/public/20261004/1000289603.avif",    desc: "100% algodón, corte clásico" },
+      { id: 3, nombre: "Remera Oversize",  precio: 95, categoria: "remeras",    stock: 3,  img: "https://user40534.na.imgto.link/public/20261004/1000289612.avif",  desc: "Corte amplio, unisex" },
+      { id: 4, nombre: "Remera Estampada", precio: 90, categoria: "remeras",    stock: 0,  img: "https://user40534.na.imgto.link/public/20261004/1000286496.avif", desc: "Diseño exclusivo PACAS" },
+
+      // Café
+      { id: 5, nombre: "Café Perú 250g",      precio: 45, categoria: "cafe", stock: 20, img: "https://user40534.na.imgto.link/public/20261004/1000289688.avif",   desc: "Tueste medio" },
+      { id: 6, nombre: "Café Perú 500g",   precio: 60, categoria: "cafe", stock: 15, img: "https://user40534.na.imgto.link/public/20261004/1000289680.avif",   desc: "Tueste intenso" },
+      { id: 7, nombre: "Café Perú 250g", precio: 39, categoria: "cafe", stock: 8,  img: "https://user40534.na.imgto.link/public/20261004/1000289688.avif",   desc: "Práctico y rápido" },
+      { id: 8, nombre: "Café Perú 250g",  precio: 50, categoria: "cafe", stock: 2,  img: "https://user40534.na.imgto.link/public/20261004/1000289688.avif", desc: "Origen único, Colombia" },
+
+      // Accesorios
+      { id: 9,  nombre: "Vazo Termico",   precio: 45,  categoria: "accesorios", stock: 12, img: "https://user40534.na.imgto.link/public/20261004/1000289621.avif",   desc: "Con logo de la tienda" },
+      { id: 10, nombre: "Prensa Francesa", precio: 40, categoria: "accesorios", stock: 4,  img: "https://user40534.na.imgto.link/public/20261004/1000289613.avif", desc: "600 ml, vidrio templado" },
+      { id: 11, nombre: "Gorro PACAS LAB",   precio: 55,  categoria: "accesorios", stock: 0,  img: "https://user40534.na.imgto.link/public/20261004/1000287570.avif",  desc: "Unisex, varios colores" }
+    ];
+
+    // ====== CARRITO ======
+    let carrito = JSON.parse(localStorage.getItem("carrito")) || [];
+
+    function guardarCarrito() {
+      localStorage.setItem("carrito", JSON.stringify(carrito));
+      actualizarContador();
+      renderizarProductos(); // ← Refresca stock visual
+    }
+
+    // Devuelve cuánto stock queda disponible (stock original - cantidad en carrito)
+    function stockDisponible(id) {
+      const prod = productos.find(p => p.id === id);
+      const enCarrito = carrito.find(p => p.id === id);
+      const usado = enCarrito ? enCarrito.cantidad : 0;
+      return prod.stock - usado;
+    }
+
+    function agregarAlCarrito(id) {
+      const prod = productos.find(p => p.id === id);
+      const disponible = stockDisponible(id);
+
+      if (disponible <= 0) {
+        alert(`❌ No hay más stock de "${prod.nombre}"`);
+        return;
+      }
+
+      const existe = carrito.find(p => p.id === id);
+      if (existe) {
+        existe.cantidad++;
+      } else {
+        carrito.push({ ...prod, cantidad: 1 });
+      }
+      guardarCarrito();
+      alert(`✅ ${prod.nombre} agregado al carrito`);
+    }
+
+    function quitarDelCarrito(id) {
+      carrito = carrito.filter(p => p.id !== id);
+      guardarCarrito();
+      mostrarCarrito();
+    }
+
+    function cambiarCantidad(id, delta) {
+      const item = carrito.find(p => p.id === id);
+      if (!item) return;
+
+      // Si intenta SUMAR, verificar stock
+      if (delta > 0) {
+        const disponible = stockDisponible(id);
+        if (disponible <= 0) {
+          alert("❌ No hay más stock disponible de este producto");
+          return;
+        }
+      }
+
+      item.cantidad += delta;
+      if (item.cantidad <= 0) {
+        quitarDelCarrito(id);
+      } else {
+        guardarCarrito();
+        mostrarCarrito();
+      }
+    }
+
+    function vaciarCarrito() {
+      if (confirm("¿Vaciar el carrito?")) {
+        carrito = [];
+        guardarCarrito();
+        mostrarCarrito();
+      }
+    }
+
+    function actualizarContador() {
+      const total = carrito.reduce((acc, p) => acc + p.cantidad, 0);
+      document.getElementById("contadorCarrito").textContent = total;
+    }
+
+    function abrirCarrito() {
+      mostrarCarrito();
+      document.getElementById("modalCarrito").classList.remove("hidden");
+    }
+
+    function cerrarCarrito() {
+      document.getElementById("modalCarrito").classList.add("hidden");
+    }
+
+    function mostrarCarrito() {
+      const lista = document.getElementById("listaCarrito");
+      if (carrito.length === 0) {
+        lista.innerHTML = '<p class="text-gray-500 text-center py-4">Tu carrito está vacío 🛒</p>';
+        document.getElementById("totalCarrito").textContent = "$0";
+        return;
+      }
+      lista.innerHTML = carrito.map(p => {
+        const disponible = stockDisponible(p.id);
+        return `
+        <div class="flex justify-between items-center border-b pb-2">
+          <div>
+            <p class="font-semibold">${p.nombre}</p>
+            <p class="text-sm text-gray-500">$${p.precio.toLocaleString()} c/u</p>
+            <div class="flex items-center gap-2 mt-1">
+              <button onclick="cambiarCantidad(${p.id}, -1)" class="bg-gray-200 px-2 rounded">−</button>
+              <span>${p.cantidad}</span>
+              <button onclick="cambiarCantidad(${p.id}, 1)"
+                class="px-2 rounded ${disponible <= 0 ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 'bg-gray-200'}">+</button>
+            </div>
+            ${disponible <= 0 ? '<p class="text-xs text-red-500 mt-1">Sin más stock</p>' : ''}
+          </div>
+          <div class="text-right">
+            <p class="font-bold text-cafe">$${(p.precio * p.cantidad).toLocaleString()}</p>
+            <button onclick="quitarDelCarrito(${p.id})" class="text-red-500 text-sm hover:underline">Eliminar</button>
+          </div>
+        </div>
+        `;
+      }).join("");
+      const total = carrito.reduce((acc, p) => acc + p.precio * p.cantidad, 0);
+      document.getElementById("totalCarrito").textContent = "$" + total.toLocaleString();
+    }
+
+    // ====== RENDER PRODUCTOS EN CARRUSELES ======
+    function renderizarProductos() {
+      const categorias = {
+        remeras:    "carrusel-remeras",
+        cafe:       "carrusel-cafe",
+        accesorios: "carrusel-accesorios"
+      };
+
+      Object.keys(categorias).forEach(cat => {
+        const contenedor = document.getElementById(categorias[cat]);
+        contenedor.innerHTML = productos
+          .filter(p => p.categoria === cat)
+          .map(p => {
+            const disponible = stockDisponible(p.id);
+            const sinStock = disponible <= 0;
+            const pocoStock = !sinStock && disponible <= 3;
+
+            return `
+              <div class="card-producto bg-white rounded-lg shadow hover:shadow-lg transition overflow-hidden">
+                ${sinStock ? '<span class="badge-sinstock">SIN STOCK</span>' : ''}
+                ${pocoStock ? `<span class="badge-pocostock">¡Últimas ${disponible}!</span>` : ''}
+                <img src="${p.img}" alt="${p.nombre}"
+                     class="img-zoom w-full h-48 object-cover"
+                     onclick="abrirZoom('${p.img}', '${p.nombre}')">
+                <div class="p-4">
+                  <h3 class="font-bold text-cafeOscuro">${p.nombre}</h3>
+                  <p class="text-sm text-gray-600 mb-2">${p.desc}</p>
+                  <p class="font-bold text-cafe text-lg">$${p.precio.toLocaleString()}</p>
+                  <p class="text-xs ${sinStock ? 'text-red-500' : 'text-gray-500'} mt-1">
+                    ${sinStock ? 'Sin stock' : `Stock: ${disponible}`}
+                  </p>
+                  <button onclick="agregarAlCarrito(${p.id})"
+                    ${sinStock ? 'disabled' : ''}
+                    class="mt-3 w-full py-2 rounded transition ${
+                      sinStock
+                        ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                        : 'bg-cafe text-white hover:bg-cafeOscuro'
+                    }">
+                    ${sinStock ? 'Sin stock' : 'Agregar al carrito'}
+                  </button>
+                </div>
+              </div>
+            `;
+          }).join("");
+      });
+    }
+
+    // ====== MOVER CARRUSEL ======
+    function moverCarrusel(idCarrusel, direccion) {
+      const carrusel = document.getElementById(idCarrusel);
+      const desplazamiento = 280;
+      carrusel.scrollBy({ left: direccion * desplazamiento, behavior: "smooth" });
+    }
+
+    // ====== ZOOM DE IMAGEN ======
+    function abrirZoom(src, alt) {
+      const modal = document.getElementById("modalZoom");
+      const img = document.getElementById("imgZoom");
+      img.src = src;
+      img.alt = alt;
+      modal.classList.add("activo");
+      document.body.style.overflow = "hidden"; // bloquea scroll de fondo
+    }
+
+    function cerrarZoom(e) {
+      // Cierra si hace click en el fondo, en la X, o presiona ESC
+      if (!e || e.target.id === "modalZoom" || e.target.classList.contains("cerrar-zoom")) {
+        const modal = document.getElementById("modalZoom");
+        modal.classList.remove("activo");
+        document.body.style.overflow = "";
+      }
+    }
+
+    // Cerrar zoom con tecla ESC
+    document.addEventListener("keydown", function(e) {
+      if (e.key === "Escape") cerrarZoom();
+    });
+
+    // ====== WHATSAPP ======
+    const NUMERO_WHATSAPP = "+51 931671112"; // ← CAMBIÁ por tu número real
+
+    function enviarCarritoWhatsApp() {
+      if (carrito.length === 0) {
+        alert("Tu carrito está vacío");
+        return;
+      }
+      let mensaje = "¡Hola! Quiero hacer este pedido:\n\n";
+      carrito.forEach(p => {
+        mensaje += `• ${p.nombre} x${p.cantidad} = $${(p.precio * p.cantidad).toLocaleString()}\n`;
+      });
+      const total = carrito.reduce((acc, p) => acc + p.precio * p.cantidad, 0);
+      mensaje += `\nTotal: $${total.toLocaleString()}`;
+      const url = `https://wa.me/${NUMERO_WHATSAPP}?text=${encodeURIComponent(mensaje)}`;
+      window.open(url, "_blank");
+    }
+
+    // Formulario de contacto → WhatsApp
+    document.getElementById("formPedido").addEventListener("submit", function(e) {
+      e.preventDefault();
+      const nombre = document.getElementById("nombre").value;
+      const telefono = document.getElementById("telefono").value;
+      const mensaje = document.getElementById("mensaje").value;
+      const texto = `¡Hola! Soy ${nombre} (tel: ${telefono}).\n${mensaje}`;
+      const url = `https://wa.me/${NUMERO_WHATSAPP}?text=${encodeURIComponent(texto)}`;
+      window.open(url, "_blank");
+    });
+
+    // Cerrar modal carrito al hacer clic afuera
+    document.getElementById("modalCarrito").addEventListener("click", function(e) {
+      if (e.target === this) cerrarCarrito();
+    });
+
+    // ====== INICIALIZAR ======
+    renderizarProductos();
+    actualizarContador();
+  </script>
+
+</body>
+</html>
